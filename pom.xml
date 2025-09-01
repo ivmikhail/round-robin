@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    This is BOM (Bill of Materials) module that manages versions
+
+    For dependencies and project configuration see round-robin-parent/pom.xml
+
+    Project structure:
+    - Root BOM module
+        - parent module
+            - application-api module
+            - routing-api module
+
+     More detail https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Bill_of_Materials_.28BOM.29_POMs
+     -->
+
+    <properties>
+        <project.version>1.0.0-SNAPSHOT</project.version>
+    </properties>
+
+    <groupId>com.github.ivmikhail</groupId>
+    <artifactId>bom</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>parent</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.ivmikhail</groupId>
+                <artifactId>parent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ivmikhail</groupId>
+                <artifactId>application-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ivmikhail</groupId>
+                <artifactId>routing-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
