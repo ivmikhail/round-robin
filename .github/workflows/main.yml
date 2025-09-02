@@ -2,11 +2,11 @@ name: CI/CD
 
 on:
   push:
-    branches-ignore:
-      - "main"   # avoid double run when PR opened
+    branches:
+      - main
   pull_request:
     branches:
-      - "main"
+      - main
   workflow_dispatch: # manual trigger for deploy
 
 jobs:
