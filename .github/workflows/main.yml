@@ -2,11 +2,12 @@ name: CI/CD
 
 on:
   push:
-    branches:
-      - "**"   # all branches
+    branches-ignore:
+      - "main"   # avoid double run when PR opened
   pull_request:
     branches:
       - "main"
+  workflow_dispatch: # manual trigger for deploy
 
 jobs:
   package:
@@ -22,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and run Unit tests
+      - name: Build (skip tests)
         run: ./mvnw -B package -DskipTests
 
       - name: Run Unit Tests
@@ -31,6 +32,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' # run only when manually triggered
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +44,6 @@ jobs:
           cache: maven
 
       - name: Build & Publish Docker Image
-        if: github.event_name == 'workflow_dispatch'
         env:
           REGISTRY_ADDR: ${{ secrets.REGISTRY_ADDR }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
@@ -50,6 +51,5 @@ jobs:
         run: ./mvnw -DskipTests jib:build
 
       - name: Deploy to AWS
-        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Deploying to AWS..."
