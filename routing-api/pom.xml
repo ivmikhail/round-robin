@@ -6,7 +6,7 @@
         <groupId>com.github.ivmikhail</groupId>
         <artifactId>parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>1.0.0</version>
+        <version>0.1</version>
     </parent>
 
     <artifactId>routing-api</artifactId>
@@ -35,4 +35,24 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <container>
+                        <mainClass>com.github.ivmikhail.routing.api.App</mainClass>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
+                    <to>
+                        <image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</image>
+                    </to>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -10,12 +10,12 @@
         <groupId>com.github.ivmikhail</groupId>
         <artifactId>bom</artifactId>
         <relativePath>../pom.xml</relativePath>
-        <version>1.0.0</version>
+        <version>0.1</version>
     </parent>
 
     <artifactId>parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>0.1</version>
 
     <!-- Project configuration -->
     <properties>
@@ -23,7 +23,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.version>1.0.0-SNAPSHOT</project.version>
+        <maven.build.timestamp.format>yyyy.MMdd.HHmmss</maven.build.timestamp.format> <!-- artifacts versions -->
+        <project.version>${maven.build.timestamp}</project.version>
     </properties>
 
     <modules>
@@ -70,5 +71,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
