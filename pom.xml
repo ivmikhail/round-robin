@@ -16,13 +16,10 @@
      More detail https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Bill_of_Materials_.28BOM.29_POMs
      -->
 
-    <properties>
-        <project.version>1.0.0-SNAPSHOT</project.version>
-    </properties>
 
     <groupId>com.github.ivmikhail</groupId>
     <artifactId>bom</artifactId>
-    <version>1.0.0</version>
+    <version>0.1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -34,18 +31,44 @@
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>parent</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>application-api</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>routing-api</artifactId>
-                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <version>3.4.6</version>
+                    <configuration>
+                        <from>
+                            <image>eclipse-temurin:21-jre-jammy</image>
+                        </from>
+                        <to>
+                            <auth>
+                                <username>${env.REGISTRY_USERNAME}</username>
+                                <password>${env.REGISTRY_PASSWORD}</password>
+                            </auth>
+                        </to>
+                    </configuration>
+
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
