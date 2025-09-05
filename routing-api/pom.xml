@@ -10,8 +10,8 @@
     </parent>
 
     <artifactId>routing-api</artifactId>
-    <version>${project.version}</version>
     <packaging>jar</packaging>
+    <version>${revision}</version>
 
     <dependencies>
         <dependency>
