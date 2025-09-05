@@ -21,7 +21,7 @@ jobs:
           REGISTRY_ADDR: ${{ secrets.REGISTRY_ADDR }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-        run: ./mvnw -DskipTests jib:build
+        run: ./mvnw compile jib:build -DskipTests
 
       - name: Deploy to AWS
         run: |
