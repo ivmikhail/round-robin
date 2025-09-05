@@ -8,7 +8,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -21,8 +34,36 @@ jobs:
           REGISTRY_ADDR: ${{ secrets.REGISTRY_ADDR }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-        run: ./mvnw compile jib:build -DskipTests
+        run: ./mvnw compile jib:build -DskipTests -Drevision=${GITHUB_RUN_NUMBER}
 
-      - name: Deploy to AWS
-        run: |
-          echo "Deploying to AWS..."
+      - name: Fill in the new application-api image ID in the Amazon ECS task definition
+        id: task-def-application-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/task-definition/application-api.json
+          container-name: application-api
+          image: ${{ secrets.REGISTRY_ADDR }}/application-api:${GITHUB_RUN_NUMBER}
+
+      - name: Fill in the new routing-api image ID in the Amazon ECS task definition
+        id: task-def-routing-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/task-definition/routing-api.json
+          container-name: routing-api
+          image: ${{ secrets.REGISTRY_ADDR }}/routing-api:${GITHUB_RUN_NUMBER}
+
+      - name: Deploy routing-api Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-routing-api.outputs.task-definition }}
+          service: routing-api
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Deploy application-api Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-application-api.outputs.task-definition }}
+          service: application-api
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
