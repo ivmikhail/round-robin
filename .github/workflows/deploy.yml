@@ -31,7 +31,7 @@ jobs:
 
       - name: Build & Publish Docker Image
         env:
-          REGISTRY_ADDR: ${{ secrets.REGISTRY_ADDR }}
+          REGISTRY_ADDR: ${{ vars.REGISTRY_ADDR }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: ./mvnw compile jib:build -DskipTests -Drevision=${GITHUB_RUN_NUMBER}
@@ -53,7 +53,7 @@ jobs:
           image: ${{ secrets.REGISTRY_ADDR }}/routing-api:${{ github.run_number }}
 
       - name: Deploy routing-api Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def-routing-api.outputs.task-definition }}
           service: routing-api
@@ -61,7 +61,7 @@ jobs:
           wait-for-service-stability: true
 
       - name: Deploy application-api Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def-application-api.outputs.task-definition }}
           service: application-api
