@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  workflow_dispatch: # Adds "Run workflow" button in Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build & Publish Docker Image
+        env:
+          REGISTRY_ADDR: ${{ secrets.REGISTRY_ADDR }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: ./mvnw -DskipTests jib:build
+
+      - name: Deploy to AWS
+        run: |
+          echo "Deploying to AWS..."
