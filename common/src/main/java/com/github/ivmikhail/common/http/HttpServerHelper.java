@@ -1,7 +1,5 @@
 package com.github.ivmikhail.common.http;
 
-import com.github.ivmikhail.common.http.handler.ExceptionHandler;
-import com.github.ivmikhail.common.http.handler.StatusHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -22,12 +20,18 @@ public class HttpServerHelper {
 
         HttpServer server = HttpServer.create();
         server.bind(addr, backlog);
-        ExceptionHandler exceptionHandler = new ExceptionHandler();
-        server.createContext("/health", new StatusHandler(exceptionHandler));
+        server.createContext("/health", new StatusHandler());
         server.setExecutor(Executors.newCachedThreadPool());
 
         server.start();
         logger.info("HTTP server starts on {}", server.getAddress());
+
+        // Add shutdown hook to stop the server
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down HTTP server...");
+            server.stop(0); // 0 = stop immediately
+            logger.info("HTTP server stopped");
+        }));
 
         return server;
     }

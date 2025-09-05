@@ -1,7 +1,5 @@
 package com.github.ivmikhail.application.api;
 
-import com.github.ivmikhail.common.http.JsonValidator;
-import com.github.ivmikhail.common.http.handler.ExceptionHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +18,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
 
 import static java.net.HttpURLConnection.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +38,8 @@ class ApiEndpointHandlerTest {
     @BeforeEach
     public void beforeEach() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/", new ApiEndpointHandler(new ExceptionHandler(), validator));
+        server.createContext("/", new ApiEndpointHandler(validator));
+        server.setExecutor(Executors.newCachedThreadPool());
         server.start();
 
         client = HttpClient.newHttpClient();
@@ -53,7 +53,7 @@ class ApiEndpointHandlerTest {
 
 
     @Test
-    void shouldReturnCorrectResponse() throws URISyntaxException, IOException, InterruptedException {
+    void shouldReturnCorrectResponseIfPayloadIsValid() throws URISyntaxException, IOException, InterruptedException {
         when(validator.isValid(anyString())).thenReturn(true);
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
@@ -61,9 +61,23 @@ class ApiEndpointHandlerTest {
                 HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("{\"test\": true}")).build(),
                 BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
-        assertEquals(HTTP_OK, apiResponse.statusCode());
+        assertEquals(HTTP_BAD_REQUEST, apiResponse.statusCode());
         assertEquals("{\"test\": true}", apiResponse.body());
         verify(validator).isValid(eq("{\"test\": true}"));
+    }
+
+    @Test
+    void shouldReturnCorrectResponseIfPayloadIsNotValid() throws URISyntaxException, IOException, InterruptedException {
+        when(validator.isValid(anyString())).thenReturn(false);
+        URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
+
+        HttpResponse<String> apiResponse = client.send(
+                HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("notvalid")).build(),
+                BodyHandlers.ofString(StandardCharsets.UTF_8)
+        );
+        assertEquals(HTTP_BAD_REQUEST, apiResponse.statusCode());
+        assertEquals("notvalid", apiResponse.body());
+        verify(validator).isValid(eq("notvalid"));
     }
 
     @Test

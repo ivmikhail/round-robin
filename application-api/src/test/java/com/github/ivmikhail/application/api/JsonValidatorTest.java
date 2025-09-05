@@ -1,4 +1,4 @@
-package com.github.ivmikhail.common.http;
+package com.github.ivmikhail.application.api;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

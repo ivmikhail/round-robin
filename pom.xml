@@ -5,7 +5,7 @@
     <!--
     This is BOM (Bill of Materials) module that manages versions
 
-    For dependencies and project configuration see round-robin-parent/pom.xml
+    For dependencies and project configuration see parent/pom.xml
 
     Project structure:
     - Root BOM module
@@ -16,37 +16,62 @@
      More detail https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Bill_of_Materials_.28BOM.29_POMs
      -->
 
-
     <groupId>com.github.ivmikhail</groupId>
-    <artifactId>bom</artifactId>
+    <artifactId>parent</artifactId>
     <version>0.1</version>
     <packaging>pom</packaging>
 
+    <!-- Project configuration -->
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy.MMdd.HHmmss</maven.build.timestamp.format>
+        <revision>${maven.build.timestamp}</revision> <!-- default version -->
+    </properties>
+
     <modules>
-        <module>parent</module>
+        <module>common</module>
+        <module>application-api</module>
+        <module>routing-api</module>
     </modules>
 
+    <!-- Project dependencies only here -->
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>parent</artifactId>
-                <version>0.1</version>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.13.4</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>common</artifactId>
-                <version>0.1</version>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>5.19.0</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>application-api</artifactId>
-                <version>0.1</version>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>1.4.4</version>
             </dependency>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>routing-api</artifactId>
-                <version>0.1</version>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.13.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.17</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.5.18</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

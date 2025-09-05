@@ -1,49 +1,54 @@
 package com.github.ivmikhail.application.api;
 
-import com.github.ivmikhail.common.http.JsonValidator;
-import com.github.ivmikhail.common.http.handler.ExceptionHandler;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 
 import static java.net.HttpURLConnection.*;
 
 public class ApiEndpointHandler implements HttpHandler {
-    private ExceptionHandler exceptionHandler;
-    private JsonValidator validator;
 
-    public ApiEndpointHandler(ExceptionHandler exceptionHandler, JsonValidator validator) {
-        this.exceptionHandler = exceptionHandler;
-        this.validator = validator;
+    private final JsonValidator jsonValidator;
+
+    public ApiEndpointHandler(JsonValidator jsonValidator) {
+        this.jsonValidator = jsonValidator;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        try (InputStream is = exchange.getRequestBody();
-             OutputStream os = exchange.getResponseBody()
-        ) {
-            byte[] responseBody = is.readAllBytes();
-            String requestString = new String(responseBody, getCharset(exchange));
 
-            int responseCode = HTTP_BAD_METHOD;
-            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                responseCode = validator.isValid(requestString) ? HTTP_OK : HTTP_BAD_REQUEST;
+        try (InputStream is = exchange.getRequestBody()) {
+            byte[] request = is.readAllBytes();
+
+            if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
+                sendResponse(HTTP_BAD_METHOD, request, exchange);
+                return;
+            }
+            Charset charset = getCharset(exchange, StandardCharsets.UTF_8);
+            String body = new String(request, charset);
+
+            if (!jsonValidator.isValid(body)) {
+                sendResponse(HTTP_BAD_REQUEST, request, exchange);
+                return;
             }
 
-            exchange.sendResponseHeaders(responseCode, responseBody.length);
-            os.write(responseBody); // return whatever was received
+            byte[] response = body.getBytes(charset);
+            Headers headers = Headers.of("Content-Type", "application/json; charset=" + charset.displayName());
+            sendResponse(HTTP_BAD_REQUEST, response, headers, exchange);
         } catch (Exception e) {
-            exceptionHandler.handle(exchange, e);
+            handeException(exchange, e);
+        } finally {
+            exchange.close();
         }
     }
 
-    private Charset getCharset(HttpExchange exchange) {
+    private Charset getCharset(HttpExchange exchange, Charset defaultCharset) throws UnsupportedCharsetException {
         String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
         if (contentType != null && contentType.contains("charset=")) {
             String[] parts = contentType.split("charset=");
@@ -51,6 +56,36 @@ public class ApiEndpointHandler implements HttpHandler {
                 return Charset.forName(parts[1].trim()); // may throw UnsupportedCharsetException
             }
         }
-        return StandardCharsets.UTF_8;
+        return defaultCharset;
+    }
+
+    private void handeException(HttpExchange exchange, Exception e) {
+        try {
+            StringWriter sw = new StringWriter();
+            try (PrintWriter pw = new PrintWriter(sw)) {
+                e.printStackTrace(pw);
+            }
+            byte[] response = sw.toString().getBytes(StandardCharsets.UTF_8);
+            Headers.of("Content-Type", "text/plain; charset=UTF-8");
+            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                exchange.sendResponseHeaders(HTTP_INTERNAL_ERROR, response.length);
+                os.write(response);
+            }
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void sendResponse(int httpCode, byte[] response, HttpExchange e) throws IOException {
+        sendResponse(httpCode, response, null, e);
+    }
+
+    private void sendResponse(int httpCode, byte[] response, Headers headers, HttpExchange e) throws IOException {
+        if (headers != null) {
+            e.getResponseHeaders().putAll(headers);
+        }
+        e.sendResponseHeaders(httpCode, response.length);
+        e.getResponseBody().write(response);
     }
 }

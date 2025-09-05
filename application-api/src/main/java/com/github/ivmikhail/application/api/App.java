@@ -1,8 +1,6 @@
 package com.github.ivmikhail.application.api;
 
 import com.github.ivmikhail.common.http.HttpServerHelper;
-import com.github.ivmikhail.common.http.JsonValidator;
-import com.github.ivmikhail.common.http.handler.ExceptionHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -19,7 +17,7 @@ public class App {
         Config config = ConfigFactory.load();
         HttpServer server = HttpServerHelper.start(config);
 
-        ApiEndpointHandler handler = new ApiEndpointHandler(new ExceptionHandler(), new JsonValidator());
+        ApiEndpointHandler handler = new ApiEndpointHandler(new JsonValidator());
         server.createContext("/", handler);
         logger.info("application-api started");
     }
