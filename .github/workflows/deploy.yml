@@ -42,7 +42,7 @@ jobs:
         with:
           task-definition: .aws/task-definition/application-api.json
           container-name: application-api
-          image: ${{ secrets.REGISTRY_ADDR }}/application-api:${GITHUB_RUN_NUMBER}
+          image: ${{ secrets.REGISTRY_ADDR }}/application-api:${{ github.run_number }}
 
       - name: Fill in the new routing-api image ID in the Amazon ECS task definition
         id: task-def-routing-api
@@ -50,7 +50,7 @@ jobs:
         with:
           task-definition: .aws/task-definition/routing-api.json
           container-name: routing-api
-          image: ${{ secrets.REGISTRY_ADDR }}/routing-api:${GITHUB_RUN_NUMBER}
+          image: ${{ secrets.REGISTRY_ADDR }}/routing-api:${{ github.run_number }}
 
       - name: Deploy routing-api Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
