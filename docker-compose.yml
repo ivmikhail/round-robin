@@ -48,7 +48,7 @@ services:
     pull_policy: never
     container_name: routing-api
     ports:
-      - "8090:8080"
+      - "8084:8080"
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
