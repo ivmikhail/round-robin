@@ -1,8 +1,6 @@
 package com.github.ivmikhail.application.api;
 
-import com.github.ivmikhail.application.api.http.handler.ApiEndpointHandler;
-import com.github.ivmikhail.application.api.http.handler.ExceptionHandler;
-import com.github.ivmikhail.application.api.http.handler.StatusHandler;
+import com.github.ivmikhail.common.http.HttpServerHelper;
 import com.sun.net.httpserver.HttpServer;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -10,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
 
 public class App {
 
@@ -19,24 +15,10 @@ public class App {
 
     public static void main(String[] args) throws IOException {
         Config config = ConfigFactory.load();
-        startHttpServer(config);
-    }
+        HttpServer server = HttpServerHelper.start(config);
 
-    private static HttpServer startHttpServer(Config config) throws IOException {
-        int port = config.getInt("http.server.port");
-        int backlog = config.getInt("http.server.backlog");
-        InetSocketAddress addr = new InetSocketAddress(port);
-
-        HttpServer server = HttpServer.create();
-        server.bind(addr, backlog);
-        ExceptionHandler exceptionHandler = new ExceptionHandler();
-        server.createContext("/status", new StatusHandler(exceptionHandler));
-        server.createContext("/", new ApiEndpointHandler(exceptionHandler, new JsonValidator()));
-        server.setExecutor(Executors.newCachedThreadPool());
-
-        server.start();
-        logger.info("HTTP server starts on {}", server.getAddress());
-
-        return server;
+        ApiEndpointHandler handler = new ApiEndpointHandler(new JsonValidator());
+        server.createContext("/", handler);
+        logger.info("application-api started");
     }
 }

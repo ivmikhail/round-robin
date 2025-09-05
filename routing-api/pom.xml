@@ -5,34 +5,33 @@
     <parent>
         <groupId>com.github.ivmikhail</groupId>
         <artifactId>parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
         <version>0.1</version>
     </parent>
 
     <artifactId>routing-api</artifactId>
-    <version>${project.version}</version>
     <packaging>jar</packaging>
+    <version>${revision}</version>
 
     <dependencies>
         <dependency>
+            <groupId>com.github.ivmikhail</groupId>
+            <artifactId>common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -48,9 +47,6 @@
                             <port>8080</port>
                         </ports>
                     </container>
-                    <to>
-                        <image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</image>
-                    </to>
                 </configuration>
             </plugin>
         </plugins>

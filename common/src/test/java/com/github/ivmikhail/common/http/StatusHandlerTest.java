@@ -1,5 +1,6 @@
-package com.github.ivmikhail.application.api.http.handler;
+package com.github.ivmikhail.common.http;
 
+import com.github.ivmikhail.common.http.StatusHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ class StatusHandlerTest {
     @BeforeEach
     public void beforeEach() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/status", new StatusHandler(new ExceptionHandler()));
+        server.createContext("/status", new StatusHandler());
         server.start();
 
         client = HttpClient.newHttpClient();

@@ -5,7 +5,7 @@
     <!--
     This is BOM (Bill of Materials) module that manages versions
 
-    For dependencies and project configuration see round-robin-parent/pom.xml
+    For dependencies and project configuration see parent/pom.xml
 
     Project structure:
     - Root BOM module
@@ -16,29 +16,77 @@
      More detail https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Bill_of_Materials_.28BOM.29_POMs
      -->
 
-
     <groupId>com.github.ivmikhail</groupId>
-    <artifactId>bom</artifactId>
+    <artifactId>parent</artifactId>
     <version>0.1</version>
     <packaging>pom</packaging>
 
+    <!-- Project configuration -->
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy.MMdd.HHmmss</maven.build.timestamp.format>
+        <revision>latest</revision> <!-- default version -->
+        <docker.image>${project.name}:${project.version}</docker.image>
+    </properties>
+
     <modules>
-        <module>parent</module>
+        <module>common</module>
+        <module>application-api</module>
+        <module>routing-api</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>set-registry-addr-from-env</id>
+            <activation>
+                <property>
+                    <name>env.REGISTRY_ADDR</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</docker.image>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- Project dependencies only here -->
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>parent</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.13.4</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>application-api</artifactId>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>5.19.0</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.github.ivmikhail</groupId>
-                <artifactId>routing-api</artifactId>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>1.4.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.13.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.17</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.5.18</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -55,13 +103,22 @@
                             <image>eclipse-temurin:21-jre-jammy</image>
                         </from>
                         <to>
+                            <image>${docker.image}</image>
                             <auth>
                                 <username>${env.REGISTRY_USERNAME}</username>
                                 <password>${env.REGISTRY_PASSWORD}</password>
                             </auth>
                         </to>
                     </configuration>
-
+                    <executions>
+                        <execution>
+                            <id>docker-build-on-package</id>
+                            <phase>package</phase> <!-- binds to package -->
+                            <goals>
+                                <goal>dockerBuild</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
