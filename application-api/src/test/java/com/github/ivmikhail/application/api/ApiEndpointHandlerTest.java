@@ -1,6 +1,8 @@
 package com.github.ivmikhail.application.api;
 
 import com.sun.net.httpserver.HttpServer;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.LongHistogram;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,8 +39,9 @@ class ApiEndpointHandlerTest {
 
     @BeforeEach
     public void beforeEach() throws IOException {
+        LongHistogram histogram = OpenTelemetry.noop().getMeter("noop").histogramBuilder("noop").ofLongs().build();
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/", new ApiEndpointHandler(validator));
+        server.createContext("/", new ApiEndpointHandler(validator, histogram));
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
 
@@ -57,10 +60,7 @@ class ApiEndpointHandlerTest {
         when(validator.isValid(anyString())).thenReturn(true);
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
-        HttpResponse<String> apiResponse = client.send(
-                HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("{\"test\": true}")).build(),
-                BodyHandlers.ofString(StandardCharsets.UTF_8)
-        );
+        HttpResponse<String> apiResponse = client.send(HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("{\"test\": true}")).build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
         assertEquals(HTTP_BAD_REQUEST, apiResponse.statusCode());
         assertEquals("{\"test\": true}", apiResponse.body());
         verify(validator).isValid(eq("{\"test\": true}"));
@@ -71,10 +71,7 @@ class ApiEndpointHandlerTest {
         when(validator.isValid(anyString())).thenReturn(false);
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
-        HttpResponse<String> apiResponse = client.send(
-                HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("notvalid")).build(),
-                BodyHandlers.ofString(StandardCharsets.UTF_8)
-        );
+        HttpResponse<String> apiResponse = client.send(HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("notvalid")).build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
         assertEquals(HTTP_BAD_REQUEST, apiResponse.statusCode());
         assertEquals("notvalid", apiResponse.body());
         verify(validator).isValid(eq("notvalid"));
@@ -84,10 +81,7 @@ class ApiEndpointHandlerTest {
     void shouldReturn405IfGet() throws URISyntaxException, IOException, InterruptedException {
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
-        HttpResponse<String> apiResponse = client.send(
-                HttpRequest.newBuilder().uri(uri).GET().build(),
-                BodyHandlers.ofString(StandardCharsets.UTF_8)
-        );
+        HttpResponse<String> apiResponse = client.send(HttpRequest.newBuilder().uri(uri).GET().build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
         assertEquals(HTTP_BAD_METHOD, apiResponse.statusCode());
     }
 
@@ -95,12 +89,7 @@ class ApiEndpointHandlerTest {
     void shouldReturn500IfUnsupportedCharset() throws URISyntaxException, IOException, InterruptedException {
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
-        HttpResponse<String> apiResponse = client.send(
-                HttpRequest.newBuilder().uri(uri)
-                        .POST(BodyPublishers.ofString("{\"test\": true}"))
-                        .header("Content-Type", "charset=hello").build(),
-                BodyHandlers.ofString(StandardCharsets.UTF_8)
-        );
+        HttpResponse<String> apiResponse = client.send(HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("{\"test\": true}")).header("Content-Type", "charset=hello").build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
         assertEquals(HTTP_INTERNAL_ERROR, apiResponse.statusCode());
         assertTrue(apiResponse.body().startsWith("java.nio.charset.UnsupportedCharsetException: hello"));
     }
