@@ -1,0 +1,63 @@
+services:
+  # Application API Instances
+  application-api-1:
+    image: application-api:latest
+    pull_policy: never
+    container_name: application-api-1
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  application-api-2:
+    image: application-api:latest
+    pull_policy: never
+    container_name: application-api-2
+    ports:
+      - "8082:8080"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  application-api-3:
+    image: application-api:latest
+    pull_policy: never
+    container_name: application-api-3
+    ports:
+      - "8083:8080"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Routing API Instance
+  routing-api:
+    image: routing-api:latest
+    pull_policy: never
+    container_name: routing-api
+    ports:
+      - "8090:8080"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - application-api-1
+      - application-api-2
+      - application-api-3
+

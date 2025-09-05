@@ -47,9 +47,6 @@
                             <port>8080</port>
                         </ports>
                     </container>
-                    <to>
-                        <image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</image>
-                    </to>
                 </configuration>
             </plugin>
         </plugins>

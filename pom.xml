@@ -28,7 +28,8 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyy.MMdd.HHmmss</maven.build.timestamp.format>
-        <revision>${maven.build.timestamp}</revision> <!-- default version -->
+        <revision>latest</revision> <!-- default version -->
+        <docker.image>${project.name}:${project.version}</docker.image>
     </properties>
 
     <modules>
@@ -36,6 +37,20 @@
         <module>application-api</module>
         <module>routing-api</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>set-registry-addr-from-env</id>
+            <activation>
+                <property>
+                    <name>env.REGISTRY_ADDR</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</docker.image>
+            </properties>
+        </profile>
+    </profiles>
 
     <!-- Project dependencies only here -->
     <dependencyManagement>
@@ -88,13 +103,22 @@
                             <image>eclipse-temurin:21-jre-jammy</image>
                         </from>
                         <to>
+                            <image>${docker.image}</image>
                             <auth>
                                 <username>${env.REGISTRY_USERNAME}</username>
                                 <password>${env.REGISTRY_PASSWORD}</password>
                             </auth>
                         </to>
                     </configuration>
-
+                    <executions>
+                        <execution>
+                            <id>docker-build-on-package</id>
+                            <phase>package</phase> <!-- binds to package -->
+                            <goals>
+                                <goal>dockerBuild</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
