@@ -1,4 +1,4 @@
-package com.github.ivmikhail.application.api;
+package com.github.ivmikhail.common.http;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;

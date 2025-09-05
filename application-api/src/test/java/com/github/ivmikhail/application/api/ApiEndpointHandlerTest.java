@@ -1,6 +1,7 @@
-package com.github.ivmikhail.application.api.http.handler;
+package com.github.ivmikhail.application.api;
 
-import com.github.ivmikhail.application.api.JsonValidator;
+import com.github.ivmikhail.common.http.JsonValidator;
+import com.github.ivmikhail.common.http.handler.ExceptionHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

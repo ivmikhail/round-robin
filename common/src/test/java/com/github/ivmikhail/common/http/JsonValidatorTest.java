@@ -1,8 +1,7 @@
-package com.github.ivmikhail.application.api;
+package com.github.ivmikhail.common.http;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class JsonValidatorTest {
 
@@ -10,20 +9,20 @@ class JsonValidatorTest {
     public void shouldValidateCorrectly() {
         JsonValidator validator = new JsonValidator();
         String input = "{\"game\":\"Mobile Legends\", \"gamerID\":\"GYUTDTE\", \"points\":20}";
-        assertTrue(validator.isValid(input));
+        Assertions.assertTrue(validator.isValid(input));
     }
 
     @Test
     public void shouldFailValidation() {
         JsonValidator validator = new JsonValidator();
         String input = "\"sss\")";
-        assertFalse(validator.isValid(input));
+        Assertions.assertFalse(validator.isValid(input));
     }
 
     @Test
     public void shouldCorrecltyValidateOneWord() {
         JsonValidator validator = new JsonValidator();
         String input = "\"sss\"";
-        assertTrue(validator.isValid(input));
+        Assertions.assertTrue(validator.isValid(input));
     }
 }

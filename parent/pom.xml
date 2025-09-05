@@ -28,6 +28,7 @@
     </properties>
 
     <modules>
+        <module>../common</module>
         <module>../application-api</module>
         <module>../routing-api</module>
     </modules>

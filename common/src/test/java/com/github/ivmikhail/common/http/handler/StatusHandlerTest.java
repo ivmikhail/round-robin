@@ -1,4 +1,4 @@
-package com.github.ivmikhail.application.api.http.handler;
+package com.github.ivmikhail.common.http.handler;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;

@@ -1,6 +1,7 @@
-package com.github.ivmikhail.application.api.http.handler;
+package com.github.ivmikhail.application.api;
 
-import com.github.ivmikhail.application.api.JsonValidator;
+import com.github.ivmikhail.common.http.JsonValidator;
+import com.github.ivmikhail.common.http.handler.ExceptionHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -9,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
 
 import static java.net.HttpURLConnection.*;
 

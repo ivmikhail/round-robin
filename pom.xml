@@ -31,14 +31,22 @@
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>parent</artifactId>
+                <version>0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ivmikhail</groupId>
+                <artifactId>common</artifactId>
+                <version>0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>application-api</artifactId>
+                <version>0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ivmikhail</groupId>
                 <artifactId>routing-api</artifactId>
+                <version>0.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
