@@ -5,23 +5,29 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.Meter;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 
+import static com.github.ivmikhail.application.api.Metrics.PROCESS_DURATION_MS;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.net.HttpURLConnection.*;
 
 public class ApiEndpointHandler implements HttpHandler {
 
     private final JsonValidator jsonValidator;
-    private final LongHistogram histogram;
+    private final LongHistogram durationHistogram;
 
-    public ApiEndpointHandler(JsonValidator jsonValidator, LongHistogram durationHistogram) {
+    public ApiEndpointHandler(JsonValidator jsonValidator, Meter meter) {
         this.jsonValidator = jsonValidator;
-        this.histogram = durationHistogram;
+        this.durationHistogram = meter.histogramBuilder(PROCESS_DURATION_MS)
+                .setDescription("Time taken for each request in ms")
+                .setUnit("ms")
+                .ofLongs()
+                .build();
     }
 
     @Override
@@ -49,10 +55,11 @@ public class ApiEndpointHandler implements HttpHandler {
         } catch (Exception e) {
             handeException(exchange, e);
         } finally {
-            exchange.close();
             long duration = System.currentTimeMillis() - start;
             Attributes attrs = Attributes.of(stringKey("handler"), "api");
-            histogram.record(duration, attrs);
+            durationHistogram.record(duration, attrs);
+
+            exchange.close();
         }
     }
 

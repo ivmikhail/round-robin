@@ -2,7 +2,7 @@ package com.github.ivmikhail.application.api;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.Meter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +39,9 @@ class ApiEndpointHandlerTest {
 
     @BeforeEach
     public void beforeEach() throws IOException {
-        LongHistogram histogram = OpenTelemetry.noop().getMeter("noop").histogramBuilder("noop").ofLongs().build();
+        Meter meter = OpenTelemetry.noop().getMeter("noop");
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/", new ApiEndpointHandler(validator, histogram));
+        server.createContext("/", new ApiEndpointHandler(validator, meter));
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
 

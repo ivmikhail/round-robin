@@ -6,7 +6,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +19,11 @@ public class App {
     public static void main(String[] args) throws IOException {
         OpenTelemetry otel = GlobalOpenTelemetry.get();
         Meter meter = otel.getMeter("application-api");
-        LongHistogram durationHistogram = meter.histogramBuilder("process_duration_ms")
-                .setDescription("Time taken for each request in ms")
-                .setUnit("ms")
-                .ofLongs()
-                .build();
         Config config = ConfigFactory.load();
-        
+
         HttpServer server = HttpServerHelper.start(config);
 
-        ApiEndpointHandler handler = new ApiEndpointHandler(new JsonValidator(), durationHistogram);
+        ApiEndpointHandler handler = new ApiEndpointHandler(new JsonValidator(), meter);
         server.createContext("/", handler);
         logger.info("application-api started");
     }
