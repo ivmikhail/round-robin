@@ -1,6 +1,5 @@
 package com.github.ivmikhail.common.http;
 
-import com.github.ivmikhail.common.http.StatusHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,14 +18,14 @@ import java.nio.charset.StandardCharsets;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class StatusHandlerTest {
+class HealthHandlerTest {
     private HttpServer server;
     private HttpClient client;
 
     @BeforeEach
     public void beforeEach() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/status", new StatusHandler());
+        server.createContext("/status", new HealthHandler());
         server.start();
 
         client = HttpClient.newHttpClient();

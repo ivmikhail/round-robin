@@ -33,14 +33,6 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.opentelemetry</groupId>
-            <artifactId>aws-opentelemetry-agent</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

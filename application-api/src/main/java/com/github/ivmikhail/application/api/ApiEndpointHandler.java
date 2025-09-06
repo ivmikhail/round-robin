@@ -12,18 +12,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 
-import static com.github.ivmikhail.application.api.Metrics.PROCESS_DURATION_MS;
+import static com.github.ivmikhail.common.Metrics.PROCESS_TIME_MS;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.net.HttpURLConnection.*;
 
 public class ApiEndpointHandler implements HttpHandler {
 
-    private final JsonValidator jsonValidator;
-    private final LongHistogram durationHistogram;
+    private final LongHistogram processTimeHistogram;
 
-    public ApiEndpointHandler(JsonValidator jsonValidator, Meter meter) {
-        this.jsonValidator = jsonValidator;
-        this.durationHistogram = meter.histogramBuilder(PROCESS_DURATION_MS)
+    public ApiEndpointHandler(Meter meter) {
+        this.processTimeHistogram = meter.histogramBuilder(PROCESS_TIME_MS)
                 .setDescription("Time taken for each request in ms")
                 .setUnit("ms")
                 .ofLongs()
@@ -38,16 +36,11 @@ public class ApiEndpointHandler implements HttpHandler {
             byte[] request = is.readAllBytes();
 
             if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
-                sendResponse(HTTP_BAD_METHOD, request, exchange);
+                sendResponse(HTTP_BAD_METHOD, request, Headers.of(), exchange);
                 return;
             }
             Charset charset = getCharset(exchange, StandardCharsets.UTF_8);
             String body = new String(request, charset);
-
-            if (!jsonValidator.isValid(body)) {
-                sendResponse(HTTP_BAD_REQUEST, request, exchange);
-                return;
-            }
 
             byte[] response = body.getBytes(charset);
             Headers headers = Headers.of("Content-Type", "application/json; charset=" + charset.displayName());
@@ -57,7 +50,7 @@ public class ApiEndpointHandler implements HttpHandler {
         } finally {
             long duration = System.currentTimeMillis() - start;
             Attributes attrs = Attributes.of(stringKey("handler"), "api");
-            durationHistogram.record(duration, attrs);
+            processTimeHistogram.record(duration, attrs);
 
             exchange.close();
         }
@@ -81,19 +74,11 @@ public class ApiEndpointHandler implements HttpHandler {
                 e.printStackTrace(pw);
             }
             byte[] response = sw.toString().getBytes(StandardCharsets.UTF_8);
-            Headers.of("Content-Type", "text/plain; charset=UTF-8");
-            exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+            var headers = Headers.of("Content-Type", "text/plain; charset=UTF-8");
 
-            try (OutputStream os = exchange.getResponseBody()) {
-                exchange.sendResponseHeaders(HTTP_INTERNAL_ERROR, response.length);
-                os.write(response);
-            }
+            sendResponse(HTTP_INTERNAL_ERROR, response, headers, exchange);
         } catch (IOException ignored) {
         }
-    }
-
-    private void sendResponse(int httpCode, byte[] response, HttpExchange e) throws IOException {
-        sendResponse(httpCode, response, null, e);
     }
 
     private void sendResponse(int httpCode, byte[] response, Headers headers, HttpExchange e) throws IOException {
