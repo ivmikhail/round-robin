@@ -27,3 +27,17 @@ jobs:
 
       - name: Run Unit Tests
         run: ./mvnw -B test
+
+      - name: Upload Surefire Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
+
+      - name: Publish Test Results to GitHub
+        uses: dorny/test-reporter@v2
+        with:
+          name: Unit Tests
+          path: '**/target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: true
