@@ -1,6 +1,7 @@
 # round-robin
 
 [![codecov](https://codecov.io/github/ivmikhail/round-robin/graph/badge.svg?token=RPT77SHFSJ)](https://codecov.io/github/ivmikhail/round-robin)
+[![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)](https://ivmikhail.grafana.net/d/ivpcrpz/round-robin?orgId=1&from=2025-09-07T12:00:00.000Z&to=2025-09-07T13:00:00.000Z&timezone=browser&refresh=auto)
 
 Take-Home Assignment: Round Robin API that receives HTTP POST requests and routes them to one of a list of Application APIs
 

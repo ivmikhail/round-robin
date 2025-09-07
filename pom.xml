@@ -30,6 +30,7 @@
         <maven.build.timestamp.format>yyyy.MMdd.HHmmss</maven.build.timestamp.format>
         <revision>latest</revision> <!-- default version -->
         <docker.image>${project.name}:${project.version}</docker.image>
+        <otlp.headers>none</otlp.headers>
     </properties>
 
     <modules>
@@ -48,6 +49,18 @@
             </activation>
             <properties>
                 <docker.image>${env.REGISTRY_ADDR}/${project.name}:${project.version}</docker.image>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>set-otlp-headers</id>
+            <activation>
+                <property>
+                    <name>env.OTEL_EXPORTER_OTLP_HEADERS</name>
+                </property>
+            </activation>
+            <properties>
+                <otlp.headers>${env.OTEL_EXPORTER_OTLP_HEADERS}</otlp.headers>
             </properties>
         </profile>
     </profiles>
@@ -116,6 +129,27 @@
                                 <password>${env.REGISTRY_PASSWORD}</password>
                             </auth>
                         </to>
+                        <container>
+                            <ports>
+                                <port>8080</port>
+                            </ports>
+                            <jvmFlags>
+                                <jvmFlag>-javaagent:/app/libs/aws-opentelemetry-agent-2.11.4.jar</jvmFlag>
+                                <jvmFlag>-Dotel.java.global-autoconfigure.enabled=true</jvmFlag>
+                                <jvmFlag>-Dotel.propagators=tracecontext,baggage,xray</jvmFlag>
+                            </jvmFlags>
+                            <environment>
+                                <OTEL_SERVICE_NAME>routing-api</OTEL_SERVICE_NAME>
+                                <OTEL_SERVICE_NAME>routing-api</OTEL_SERVICE_NAME>
+                                <OTEL_RESOURCE_ATTRIBUTES>
+                                    service.name=routing-api,service.namespace=round-robin,service.version=${project.version}
+                                </OTEL_RESOURCE_ATTRIBUTES>
+                                <OTEL_EXPORTER_OTLP_ENDPOINT>https://otlp-gateway-prod-ap-southeast-1.grafana.net/otlp
+                                </OTEL_EXPORTER_OTLP_ENDPOINT>
+                                <OTEL_EXPORTER_OTLP_PROTOCOL>http/protobuf</OTEL_EXPORTER_OTLP_PROTOCOL>
+                                <OTEL_EXPORTER_OTLP_HEADERS>${otlp.headers}</OTEL_EXPORTER_OTLP_HEADERS>
+                            </environment>
+                        </container>
                     </configuration>
                     <executions>
                         <execution>
