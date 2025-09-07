@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 
-import static com.github.ivmikhail.common.Metrics.PROCESS_TIME_MS;
+import static com.github.ivmikhail.common.Metrics.APPLICATION_API_PROCESS_TIME_MS;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.net.HttpURLConnection.*;
 
@@ -24,7 +24,7 @@ public class ApiEndpointHandler implements HttpHandler {
     private final LongHistogram processTimeHistogram;
 
     public ApiEndpointHandler(Meter meter) {
-        this.processTimeHistogram = meter.histogramBuilder(PROCESS_TIME_MS)
+        this.processTimeHistogram = meter.histogramBuilder(APPLICATION_API_PROCESS_TIME_MS)
                 .setDescription("Time taken for each request in ms")
                 .setUnit("ms")
                 .ofLongs()

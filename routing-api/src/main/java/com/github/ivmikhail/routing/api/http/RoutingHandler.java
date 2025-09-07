@@ -17,7 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-import static com.github.ivmikhail.common.Metrics.PROCESS_TIME_MS;
+import static com.github.ivmikhail.common.Metrics.ROUTING_API_PROCESS_TIME_MS;
 import static com.github.ivmikhail.common.Metrics.UPSTREAM_RESPONSE_TIME_MS;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
@@ -35,7 +35,7 @@ public class RoutingHandler implements HttpHandler {
         this.rrService = rrService;
         this.httpClient = httpClient;
         this.requestTimeout = requestTimeout;
-        this.processTimeHistogram = meter.histogramBuilder(PROCESS_TIME_MS)
+        this.processTimeHistogram = meter.histogramBuilder(ROUTING_API_PROCESS_TIME_MS)
                 .setDescription("Time taken for each request in ms")
                 .setUnit("ms")
                 .ofLongs()

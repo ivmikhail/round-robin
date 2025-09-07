@@ -34,6 +34,7 @@ jobs:
           REGISTRY_ADDR: ${{ vars.REGISTRY_ADDR }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
         run: ./mvnw clean install jib:build -DskipTests -Drevision=${GITHUB_RUN_NUMBER}
 
       - name: Fill in the new application-api image ID in the Amazon ECS task definition
