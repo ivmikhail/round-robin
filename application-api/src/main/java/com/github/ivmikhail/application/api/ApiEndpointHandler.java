@@ -33,6 +33,7 @@ public class ApiEndpointHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
+        // test branch
         long startTime = System.currentTimeMillis();
 
         try {
