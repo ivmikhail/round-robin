@@ -8,6 +8,7 @@ services:
       - "8081:8080"
     restart: always
     environment:
+      JAVA_TOOL_OPTIONS: "-Dconfig.file=/app/resources/docker.conf"
       OTEL_TRACES_EXPORTER: none
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
@@ -32,6 +33,7 @@ services:
       retries: 3
       start_period: 10s
     environment:
+      JAVA_TOOL_OPTIONS: "-Dconfig.file=/app/resources/docker.conf"
       OTEL_TRACES_EXPORTER: none
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
@@ -50,6 +52,7 @@ services:
       retries: 3
       start_period: 10s
     environment:
+      JAVA_TOOL_OPTIONS: "-Dconfig.file=/app/resources/docker.conf"
       OTEL_TRACES_EXPORTER: none
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
@@ -69,6 +72,7 @@ services:
       retries: 3
       start_period: 10s
     environment:
+      JAVA_TOOL_OPTIONS: "-Dconfig.file=/app/resources/docker.conf"
       OTEL_TRACES_EXPORTER: none
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
