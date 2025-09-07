@@ -35,7 +35,7 @@ public class App {
         var httpClient = HttpClient.newBuilder().connectTimeout(connectTimeout).build();
 
         server.createContext("/server", new ServerHandler(rrService));
-        server.createContext("/", new RoutingHandler(rrService, HttpClient.newHttpClient(), meter, requestTimeout));
+        server.createContext("/", new RoutingHandler(rrService, httpClient, meter, requestTimeout));
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("shutting down scheduler service...");

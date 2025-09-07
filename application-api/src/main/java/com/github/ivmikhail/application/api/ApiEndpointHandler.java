@@ -6,6 +6,8 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -17,6 +19,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.net.HttpURLConnection.*;
 
 public class ApiEndpointHandler implements HttpHandler {
+    static final Logger logger = LoggerFactory.getLogger(ApiEndpointHandler.class);
 
     private final LongHistogram processTimeHistogram;
 
@@ -30,10 +33,10 @@ public class ApiEndpointHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
-        long start = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
-        try (InputStream is = exchange.getRequestBody()) {
-            byte[] request = is.readAllBytes();
+        try {
+            byte[] request = exchange.getRequestBody().readAllBytes();
 
             if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
                 sendResponse(HTTP_BAD_METHOD, request, Headers.of(), exchange);
@@ -42,18 +45,23 @@ public class ApiEndpointHandler implements HttpHandler {
             Charset charset = getCharset(exchange, StandardCharsets.UTF_8);
             String body = new String(request, charset);
 
+            logger.info("handling request with body {} ", body);
+
             byte[] response = body.getBytes(charset);
             Headers headers = Headers.of("Content-Type", "application/json; charset=" + charset.displayName());
-            sendResponse(HTTP_BAD_REQUEST, response, headers, exchange);
+            sendResponse(HTTP_OK, response, headers, exchange);
         } catch (Exception e) {
             handeException(exchange, e);
         } finally {
-            long duration = System.currentTimeMillis() - start;
-            Attributes attrs = Attributes.of(stringKey("handler"), "api");
-            processTimeHistogram.record(duration, attrs);
-
+            reportProcessTime(startTime);
             exchange.close();
         }
+    }
+
+    private void reportProcessTime(long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        Attributes attrs = Attributes.of(stringKey("handler"), "api");
+        processTimeHistogram.record(duration, attrs);
     }
 
     private Charset getCharset(HttpExchange exchange, Charset defaultCharset) throws UnsupportedCharsetException {

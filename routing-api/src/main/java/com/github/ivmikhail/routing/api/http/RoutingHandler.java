@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -48,8 +49,8 @@ public class RoutingHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        long start = System.currentTimeMillis();
-        try (exchange) {
+        long startTime = System.currentTimeMillis();
+        try {
             var responseCode = HTTP_BAD_GATEWAY;
             var responseBytes = "502 Bad Gateway: No upstream available".getBytes();
             var upstreamOpt = rrService.getNext();
@@ -70,15 +71,47 @@ public class RoutingHandler implements HttpHandler {
             exchange.sendResponseHeaders(responseCode, responseBytes.length);
             exchange.getResponseBody().write(responseBytes);
         } finally {
-            long duration = System.currentTimeMillis() - start;
-            Attributes attrs = Attributes.of(stringKey("handler"), "routing");
-            processTimeHistogram.record(duration, attrs);
+            reportProcessTime(startTime);
+            exchange.close();
         }
     }
 
     private HttpResponse<byte[]> forwardRequest(HttpExchange exchange, String remoteAddr) throws Exception {
-        logger.info("Forwarding request to {}", remoteAddr);
+        long startTime = System.currentTimeMillis();
+        int upstreamResponseCode = -1;
+        try {
+            var requestBody = exchange.getRequestBody().readAllBytes();
+            var request = constructRequest(exchange, remoteAddr, requestBody);
 
+            logger.info("Forwarding request ${} to {}", new String(requestBody), remoteAddr);
+
+            var res = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            upstreamResponseCode = res.statusCode();
+            return res;
+        } finally {
+            reportUpstreamResponseTime(startTime, remoteAddr, upstreamResponseCode);
+        }
+    }
+
+
+    private void reportProcessTime(long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        Attributes attrs = Attributes.of(stringKey("handler"), "routing");
+        processTimeHistogram.record(duration, attrs);
+    }
+
+    private void reportUpstreamResponseTime(long startTime, String remoteAddr, int responseCode) {
+        long duration = System.currentTimeMillis() - startTime;
+        Attributes attrs = Attributes.of(
+                stringKey("remote_addr"),
+                remoteAddr,
+                stringKey("response_code"),
+                String.valueOf(responseCode)
+        );
+        upstreamResponseTimeHistogram.record(duration, attrs);
+    }
+
+    private HttpRequest constructRequest(HttpExchange e, String remoteAddr, byte[] requestBody) throws IOException, URISyntaxException {
         // Construct URI for remoteAddr
         String[] parts = remoteAddr.split(":");
         String hostname = parts[0];
@@ -89,26 +122,17 @@ public class RoutingHandler implements HttpHandler {
                 null,
                 hostname,
                 port,
-                exchange.getRequestURI().getPath(),
-                exchange.getRequestURI().getQuery(),
+                e.getRequestURI().getPath(),
+                e.getRequestURI().getQuery(),
                 null
         );
 
         // Copy request method + body
-        var bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(exchange.getRequestBody().readAllBytes());
-        var requestBuilder = HttpRequest.newBuilder()
+        var bodyPublisher = HttpRequest.BodyPublishers.ofByteArray(requestBody);
+        return HttpRequest.newBuilder()
                 .uri(targetUri)
                 .timeout(requestTimeout)
-                .method(exchange.getRequestMethod(), bodyPublisher);
-
-        long start = System.currentTimeMillis();
-
-        var res = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
-
-        long duration = System.currentTimeMillis() - start;
-        Attributes attrs = Attributes.of(stringKey("remote_addr"), remoteAddr);
-        upstreamResponseTimeHistogram.record(duration, attrs);
-
-        return res;
+                .method(e.getRequestMethod(), bodyPublisher)
+                .build();
     }
 }

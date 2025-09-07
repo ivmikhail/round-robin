@@ -52,7 +52,7 @@ class ApiEndpointHandlerTest {
         URI uri = new URI("http://localhost:" + server.getAddress().getPort() + "/");
 
         HttpResponse<String> apiResponse = client.send(HttpRequest.newBuilder().uri(uri).POST(BodyPublishers.ofString("{\"test\": true}")).build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
-        assertEquals(HTTP_BAD_REQUEST, apiResponse.statusCode());
+        assertEquals(HTTP_OK, apiResponse.statusCode());
         assertEquals("{\"test\": true}", apiResponse.body());
     }
 
