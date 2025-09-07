@@ -53,11 +53,13 @@
                         </jvmFlags>
                         <environment>
                             <OTEL_SERVICE_NAME>routing-api</OTEL_SERVICE_NAME>
-                            <OTEL_RESOURCE_ATTRIBUTES>service.name=routing-api,service.version=${project.version}
+                            <OTEL_RESOURCE_ATTRIBUTES>
+                                service.name=routing-api,service.namespace=round-robin,service.version=${project.version}
                             </OTEL_RESOURCE_ATTRIBUTES>
-                            <OTEL_EXPORTER_OTLP_PROTOCOL>grpc</OTEL_EXPORTER_OTLP_PROTOCOL>
-                            <OTEL_METRICS_EXPORTER>otlp</OTEL_METRICS_EXPORTER>
-                            <OTEL_LOGS_EXPORTER>otlp</OTEL_LOGS_EXPORTER>
+                            <OTEL_EXPORTER_OTLP_ENDPOINT>https://otlp-gateway-prod-ap-southeast-1.grafana.net/otlp
+                            </OTEL_EXPORTER_OTLP_ENDPOINT>
+                            <OTEL_EXPORTER_OTLP_HEADERS>${env.OTEL_EXPORTER_OTLP_HEADERS}</OTEL_EXPORTER_OTLP_HEADERS>
+                            <OTEL_EXPORTER_OTLP_PROTOCOL>http/protobuf</OTEL_EXPORTER_OTLP_PROTOCOL>
                         </environment>
                     </container>
                 </configuration>
