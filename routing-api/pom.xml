@@ -46,6 +46,18 @@
                         <ports>
                             <port>8080</port>
                         </ports>
+                        <jvmFlags>
+                            <jvmFlag>-javaagent:/app/libs/aws-opentelemetry-agent-2.11.4.jar</jvmFlag>
+                            <jvmFlag>-Dotel.java.global-autoconfigure.enabled=true</jvmFlag>
+                            <jvmFlag>-Dotel.propagators=tracecontext,baggage,xray</jvmFlag>
+                        </jvmFlags>
+                        <environment>
+                            <OTEL_SERVICE_NAME>routing-api</OTEL_SERVICE_NAME>
+                            <OTEL_RESOURCE_ATTRIBUTES>service.name=routing-api,service.version=${project.version}</OTEL_RESOURCE_ATTRIBUTES>
+                            <OTEL_EXPORTER_OTLP_PROTOCOL>grpc</OTEL_EXPORTER_OTLP_PROTOCOL>
+                            <OTEL_METRICS_EXPORTER>otlp</OTEL_METRICS_EXPORTER>
+                            <OTEL_LOGS_EXPORTER>otlp</OTEL_LOGS_EXPORTER>
+                        </environment>
                     </container>
                 </configuration>
             </plugin>

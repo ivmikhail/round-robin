@@ -16,11 +16,11 @@ public class HttpServerHelper {
     public static HttpServer start(Config config) throws IOException {
         int port = config.getInt("http.server.port");
         int backlog = config.getInt("http.server.backlog");
-        InetSocketAddress addr = new InetSocketAddress(port);
+        InetSocketAddress addr = new InetSocketAddress("0.0.0.0", port); // bind to all interfaces
 
         HttpServer server = HttpServer.create();
         server.bind(addr, backlog);
-        server.createContext("/health", new StatusHandler());
+        server.createContext("/health", new HealthHandler());
         server.setExecutor(Executors.newCachedThreadPool());
 
         server.start();
@@ -28,7 +28,7 @@ public class HttpServerHelper {
 
         // Add shutdown hook to stop the server
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down HTTP server...");
+            logger.info("shutting down HTTP server...");
             server.stop(0); // 0 = stop immediately
             logger.info("HTTP server stopped");
         }));
